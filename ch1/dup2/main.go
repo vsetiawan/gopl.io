@@ -15,12 +15,18 @@ import (
 )
 
 func main() {
-	counts := make(map[string]int)
 	files := os.Args[1:]
 	if len(files) == 0 {
+		counts := make(map[string]int)
 		countLines(os.Stdin, counts)
+		if isDuplicateLine(counts) {
+			fmt.Print("duplicate exists \n")
+		} else {
+			fmt.Print("no duplicates \n")
+		}
 	} else {
 		for _, arg := range files {
+			counts := make(map[string]int)
 			f, err := os.Open(arg)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "dup2: %v\n", err)
@@ -28,13 +34,21 @@ func main() {
 			}
 			countLines(f, counts)
 			f.Close()
+			if isDuplicateLine(counts) {
+				fmt.Println(arg)
+			}
 		}
 	}
-	for line, n := range counts {
+
+}
+
+func isDuplicateLine(counts map[string]int) bool {
+	for _, n := range counts {
 		if n > 1 {
-			fmt.Printf("%d\t%s\n", n, line)
+			return true
 		}
 	}
+	return false
 }
 
 func countLines(f *os.File, counts map[string]int) {
