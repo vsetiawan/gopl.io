@@ -29,14 +29,16 @@ import (
 //!+main
 
 var (
+	colorRed   = color.RGBA{R: 0xFF, A: 0x01}
 	colorGreen = color.RGBA{G: 0xFF, A: 0x01}
+	colorBlue  = color.RGBA{B: 0xFF, A: 0x01}
 )
 
-var palette = []color.Color{color.Black, colorGreen}
+var palette = []color.Color{color.Black, colorRed, colorGreen, colorBlue}
 
 const (
 	backgroundColorIndex = 0 // next color in palette
-	graphColorIndex      = 1 // first color in palette
+	greenOnBlackIndex    = 2 // first color in palette
 )
 
 func main() {
@@ -72,13 +74,16 @@ func lissajous(out io.Writer) {
 	anim := gif.GIF{LoopCount: nframes}
 	phase := 0.0 // phase difference
 	for i := 0; i < nframes; i++ {
+		currentColorIndex := uint8(i % len(palette)) // Exercise 1.6
+		//currentColorIndex := uint8(greenOnBlackIndex) // Exercise 1.5
+
 		rect := image.Rect(0, 0, 2*size+1, 2*size+1)
 		img := image.NewPaletted(rect, palette)
 		for t := 0.0; t < cycles*2*math.Pi; t += res {
 			x := math.Sin(t)
 			y := math.Sin(t*freq + phase)
 			img.SetColorIndex(size+int(x*size+0.5), size+int(y*size+0.5),
-				graphColorIndex)
+				currentColorIndex)
 		}
 		phase += 0.1
 		anim.Delay = append(anim.Delay, delay)
