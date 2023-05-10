@@ -11,8 +11,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -22,14 +24,30 @@ func main() {
 	for _, url := range os.Args[1:] {
 		go fetch(url, ch) // start a goroutine
 	}
+	f, err := os.Create("out.txt")
+	if err != nil {
+		log.Println(err.Error())
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}(f)
 	for range os.Args[1:] {
-		fmt.Println(<-ch) // receive from channel ch
+		_, err := f.WriteString(<-ch)
+		if err != nil {
+			log.Println(err.Error())
+		}
 	}
 	fmt.Printf("%.2fs elapsed\n", time.Since(start).Seconds())
 }
 
 func fetch(url string, ch chan<- string) {
 	start := time.Now()
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		url = "http://" + url
+	}
 	resp, err := http.Get(url)
 	if err != nil {
 		ch <- fmt.Sprint(err) // send to channel ch
@@ -43,7 +61,7 @@ func fetch(url string, ch chan<- string) {
 		return
 	}
 	secs := time.Since(start).Seconds()
-	ch <- fmt.Sprintf("%.2fs  %7d  %s", secs, nbytes, url)
+	ch <- fmt.Sprintf("%.2fs  %7d  %s\n", secs, nbytes, url)
 }
 
 //!-
