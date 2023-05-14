@@ -12,6 +12,7 @@ import (
 	"image/color"
 	"math/rand"
 	"os"
+	"strconv"
 )
 
 //!-main
@@ -56,7 +57,47 @@ func main() {
 }
 
 func lissajousHandler(w http.ResponseWriter, r *http.Request) {
-	lissajous(w, getDefaultLissajousConfig())
+	lissajous(w, parseLissajousConfigFromRequest(r))
+}
+
+// i.e.: http://localhost:8000/?cycles=5&res=0.001&size=100&nframes=64&delay=8
+func parseLissajousConfigFromRequest(r *http.Request) *lissajousConfig {
+	if err := r.ParseForm(); err != nil {
+		log.Println(err.Error())
+	}
+	config := &lissajousConfig{}
+	for k, v := range r.Form {
+		switch k {
+		case "cycles":
+			var err error
+			if config.cycles, err = strconv.Atoi(v[0]); err != nil {
+				log.Println(err.Error())
+			}
+		case "res":
+			var err error
+			if config.res, err = strconv.ParseFloat(v[0], 64); err != nil {
+				log.Println(err.Error())
+			}
+		case "size":
+			var err error
+			if config.size, err = strconv.Atoi(v[0]); err != nil {
+				log.Println(err.Error())
+			}
+		case "nframes":
+			var err error
+			if config.nframes, err = strconv.Atoi(v[0]); err != nil {
+				log.Println(err.Error())
+			}
+		case "delay":
+			var err error
+			if config.delay, err = strconv.Atoi(v[0]); err != nil {
+				log.Println(err.Error())
+			}
+		default:
+			log.Printf("%v:%v", k, v)
+		}
+	}
+	return config
 }
 
 //!-main
