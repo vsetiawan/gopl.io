@@ -19,6 +19,7 @@ var count int
 
 func main() {
 	http.HandleFunc("/", handler)
+	http.HandleFunc("/favicon.ico", func(writer http.ResponseWriter, request *http.Request) {})
 	http.HandleFunc("/count", counter)
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
